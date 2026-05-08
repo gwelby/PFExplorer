@@ -1,0 +1,365 @@
+/* Dirac Belt Trick Visualization Styles */
+/* Three.js WebGL Implementation */
+
+body {
+  background: #0a0a1a;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Header */
+.belt-trick-header {
+  background: linear-gradient(135deg, #111 0%, #1a1a2e 100%);
+  border-bottom: 1px solid #333;
+  padding: 20px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.header-title h1 {
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: #00cfff;
+  margin: 0;
+}
+
+.header-subtitle {
+  color: #888;
+  font-size: 0.95rem;
+  margin: 5px 0 0 0;
+}
+
+.back-button {
+  color: #888;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.back-button:hover {
+  color: #00cfff;
+  background: rgba(var(--propagate-rgb), 0.1);
+  transform: translateX(-2px);
+}
+
+.view-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.control-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #888;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 16px;
+}
+
+.control-button:hover {
+  color: #00cfff;
+  background: rgba(var(--propagate-rgb), 0.1);
+}
+
+/* Main Layout */
+.belt-trick-main {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 0;
+  min-height: calc(100vh - 100px);
+}
+
+/* 3D Visualization */
+.visualization-section {
+  background: radial-gradient(circle at center, rgba(var(--propagate-rgb), 0.02) 0%, transparent 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+}
+
+.scene-container {
+  width: 100%;
+  height: 600px;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.belt-scene {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.belt-scene canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* Scene Overlay - Angle and State Display */
+.scene-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.angle-display,
+.state-display {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.angle-label,
+.state-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.angle-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: #00cfff;
+  font-family: 'Courier New', monospace;
+}
+
+.state-value {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #44ff88;
+}
+
+/* Controls Panel */
+.controls-section {
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 1px solid #333;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+.control-panel h3 {
+  margin: 0 0 20px 0;
+  color: #00cfff;
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.slider-control {
+  margin-bottom: 25px;
+}
+
+.slider-control label {
+  display: block;
+  margin-bottom: 8px;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.slider-control input[type="range"] {
+  width: 100%;
+  height: 6px;
+  background: #333;
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.slider-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #00cfff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider-control input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #00cfff;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.action-button {
+  flex: 1;
+  padding: 10px;
+  background: rgba(var(--propagate-rgb), 0.1);
+  border: 1px solid #00cfff;
+  color: #00cfff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.action-button:hover {
+  background: rgba(var(--propagate-rgb), 0.2);
+  transform: translateY(-2px);
+}
+
+.loop-selector {
+  margin-bottom: 25px;
+}
+
+.loop-selector label {
+  display: block;
+  margin-bottom: 10px;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.loop-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.loop-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+.loop-option input[type="radio"] {
+  accent-color: #00cfff;
+}
+
+/* Explanation Panel */
+.explanation-section {
+  grid-column: 1 / -1;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid #333;
+  padding: 30px 40px;
+}
+
+.explanation-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.explanation-content h3 {
+  margin: 0 0 15px 0;
+  color: #ffdd55;
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.math-box, .physics-box {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.math-box p, .physics-box p {
+  margin: 0 0 10px 0;
+  line-height: 1.5;
+  color: #ccc;
+}
+
+.math-box ul, .physics-box ul {
+  margin: 10px 0 0 0;
+  padding-left: 20px;
+}
+
+.math-box li, .physics-box li {
+  margin-bottom: 5px;
+  color: #aaa;
+}
+
+.status-indicator {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid #333;
+  transition: all 0.3s ease;
+}
+
+.status-text {
+  font-size: 1.1rem;
+  color: #00cfff;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .belt-trick-main {
+    grid-template-columns: 1fr;
+  }
+  
+  .controls-section {
+    border-left: none;
+    border-top: 1px solid #333;
+  }
+  
+  .explanation-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 20px;
+  }
+  
+  .visualization-section {
+    padding: 20px;
+  }
+  
+  .scene-container {
+    height: 400px;
+  }
+}
