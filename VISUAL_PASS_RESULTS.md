@@ -58,6 +58,26 @@ Do not edit or delete existing rows. The log is append-only so the audit trail s
 
 _Run log: `python sandbox\explorer\visual_pass.py --screenshots sandbox\explorer\_visual_pass_screens` at 1920x1080 via headless Chromium. Background colour (10, 10, 26). Exit 0, 17/17 panel(s) clean. Screenshots captured in `sandbox/explorer/_visual_pass_screens/`. The "c52c79e (pre-fix)" column annotates that the fixes for this spec were applied on top of commit c52c79e and have not yet been re-committed; the next release commit will re-run this sequence and append a fresh block below._
 
+| ff68d29 | 2026-05-06 | observatory | PASS | live: 40000 non-bg pixels |
+| ff68d29 | 2026-05-06 | hub | PASS | live: 15358 non-bg pixels |
+| ff68d29 | 2026-05-06 | foundations | PASS | live: 39989 non-bg pixels |
+| ff68d29 | 2026-05-06 | god-equation | PASS | live: 4291 non-bg pixels |
+| ff68d29 | 2026-05-06 | koide | PASS | live: 40000 non-bg pixels |
+| ff68d29 | 2026-05-06 | weinberg | PASS | live: 173 non-bg pixels |
+| ff68d29 | 2026-05-06 | refraction | PASS | live: 40000 non-bg pixels |
+| ff68d29 | 2026-05-06 | bohr | PASS | live: 2353 non-bg pixels |
+| ff68d29 | 2026-05-06 | generations | PASS | live: 11400 non-bg pixels |
+| ff68d29 | 2026-05-06 | consciousness | PASS | live: 39791 non-bg pixels |
+| ff68d29 | 2026-05-06 | koide-weinberg-bridge | PASS | live: 2319 non-bg pixels |
+| ff68d29 | 2026-05-06 | dashboard | PASS | live: 31106 non-bg pixels |
+| ff68d29 | 2026-05-06 | proof-atlas | PASS | live: 40000 non-bg pixels |
+| ff68d29 | 2026-05-06 | experiment-bench | PASS | live: 40000 non-bg pixels |
+| ff68d29 | 2026-05-06 | no-go-museum | PASS | live: 40000 non-bg pixels |
+| ff68d29 | 2026-05-06 | definition-lattice | PASS | live: 40000 non-bg pixels |
+| ff68d29 | 2026-05-06 | scale-ladder-panel | PASS | live: 40000 non-bg pixels |
+
+_Live deploy verification: `python sandbox\explorer\visual_pass.py --server https://gwelby.github.io/PFExplorer/` at 1920x1080 via headless Chromium after gh-pages CDN refresh. Exit 0, 17/17 panel(s) clean. This satisfies Requirement 10 (no silent deployments) — the live URL is verified, not just the build pipeline._
+
 ## Legend
 
 - `PASS` — Requirement 1.4 satisfied: at least one non-background pixel present in the 200x200 centre sample of the panel canvas within 500 ms of mount.
