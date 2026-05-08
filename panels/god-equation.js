@@ -26,7 +26,15 @@
     var exp = exponentFor(n, d);
     var anchorExp = exponentFor(3, 3);
     if (exp == null || anchorExp == null) return null;
-    return CLAIM_ANCHOR * Math.exp(exp - anchorExp);
+    // The (N,D) slider range is [1,5]x[1,5]. At (5,5) the delta from the
+    // (3,3) anchor is ~513, so raw Math.exp(delta) overflows to Infinity.
+    // Clamp the delta so the readout stays finite and the error metric
+    // stays legible. This is a display guard, not a physics change — the
+    // actual theorem is only claimed at (3,3).
+    var delta = exp - anchorExp;
+    if (delta > 60) return CLAIM_ANCHOR * Math.exp(60);
+    if (delta < -60) return CLAIM_ANCHOR * Math.exp(-60);
+    return CLAIM_ANCHOR * Math.exp(delta);
   }
 
   function sourceListHtml(sources) {
@@ -96,12 +104,18 @@
 
     var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Give the renderer a real initial size so it is not stuck at Three.js's
+    // 300x150 default. We use the stage's current client dimensions and fall
+    // back to a sensible default when the stage has not yet been laid out.
+    var initW = stage.clientWidth || 640;
+    var initH = stage.clientHeight || 400;
+    renderer.setSize(initW, initH, false);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.2;
     container.appendChild(renderer.domElement);
 
     var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 1000);
+    var camera = new THREE.PerspectiveCamera(40, initW / initH, 0.1, 1000);
     camera.position.set(0, 8, 20);
     camera.lookAt(0, 0, 0);
 
@@ -123,11 +137,14 @@
     function computeHeight(n, d) {
       var exp = exponentFor(Math.round(n), Math.round(d));
       if (exp == null) return 0;
-      // Normalize: range from 0 (Planck) to 1 (observed matter)
       var anchorExp = exponentFor(3, 3);
       if (anchorExp == null) return 0;
+      // Delta from the (3,3) anchor, clamped so the surface stays on screen.
+      // Without clamping, (5,5) blows up to exp(~513) and the whole surface
+      // flattens to zero with one corner at infinity.
       var delta = exp - anchorExp;
-      return Math.exp(delta * 0.3); // scale factor for visibility
+      var clamped = Math.max(-6, Math.min(6, delta * 0.05));
+      return Math.exp(clamped);
     }
 
     for (var i = 0; i <= nSegments; i++) {
@@ -364,7 +381,9 @@
       var b0 = b0ForN(state.nValue);
       var prediction = lambdaFor(state.nValue, state.dValue);
       var errorPct = prediction ? Math.abs(prediction - OBSERVED) / OBSERVED * 100 : null;
-      var audit = ctx.data.godEquationAudit || { dependencyChain: [], gaps: [] };
+      var audit = (ctx.data && ctx.data.godEquationAudit)
+        || (window.PFExplorerData && window.PFExplorerData.godEquationAudit)
+        || { dependencyChain: [], gaps: [] };
       var isClaimPoint = (state.nValue === 3 && state.dValue === 3);
 
       state.info.innerHTML =
@@ -417,13 +436,13 @@
         state._3d = createRenderer3D(state.canvas.parentElement);
         var self = this;
         state._3d._resizeHandler = function () {
-          var w = state.canvas.clientWidth, h = state.canvas.clientHeight;
-          state._3d.camera.aspect = w / h;
-          state._3d.camera.updateProjectionMatrix();
-          state._3d.renderer.setSize(w, h);
-          if (state._3d.composer) state._3d.composer.setSize(w, h);
+          self.resize(ctx);
         };
         window.addEventListener('resize', state._3d._resizeHandler);
+        // Snap the renderer to the current panel size on first mount. The
+        // initial size baked into createRenderer3D is just a safety floor;
+        // the real dimensions only become available after the DOM lays out.
+        this.resize(ctx);
       }
     },
 

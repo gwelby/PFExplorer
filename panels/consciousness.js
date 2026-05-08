@@ -246,8 +246,30 @@
 
     renderInfo: function (ctx) {
       var state = this.state;
-      var consciousness = ctx.app.getResult('consciousness');
-      var aria = ctx.app.getResult('aria-self-reference');
+      var data = (ctx.data) || (window.PFExplorerData) || { results: [] };
+      var results = data.results || [];
+      var findResult = function (id) {
+        var fromCtx = results.find(function (r) { return r.id === id; });
+        if (fromCtx) return fromCtx;
+        return ctx.app.getResult(id);
+      };
+      var consciousness = findResult('consciousness') || {
+        id: 'consciousness',
+        title: 'Consciousness',
+        status: 'INTUITION',
+        confidence: 0.48,
+        formula: 'Interior experience is the inside view of recursive coherence',
+        summary: '',
+        falsifier: ''
+      };
+      var aria = findResult('aria-self-reference') || {
+        id: 'aria-self-reference',
+        title: 'Aria Self-Reference',
+        status: 'ARGUED',
+        confidence: 0.75,
+        formula: 'Self-reference loop',
+        summary: ''
+      };
       var statusToClass = typeof ctx.app.statusToClass === 'function'
         ? ctx.app.statusToClass.bind(ctx.app)
         : function () { return 'status-open'; };

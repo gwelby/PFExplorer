@@ -54,6 +54,14 @@
       this.bindEvents(ctx);
       this.renderDetails(ctx);
       this.updateVisuals();
+
+      // Wire the window resize listener to the canonical resize() method
+      // and then snap once so the first frame already matches the laid-out
+      // DOM instead of init3D's default-size fallback.
+      var self = this;
+      this.state._resizeHandler = function () { self.resize(ctx); };
+      window.addEventListener('resize', this.state._resizeHandler);
+      self.resize(ctx);
     },
 
     bindEvents: function(ctx) {
@@ -286,6 +294,9 @@
     },
 
     unmount: function () {
+      if (this.state && this.state._resizeHandler) {
+          window.removeEventListener('resize', this.state._resizeHandler);
+      }
       if (this.state && this.state.animFrame) {
           cancelAnimationFrame(this.state.animFrame);
       }
@@ -296,9 +307,10 @@
       if (!this.state || !this.state.camera) return;
       var w = this.state.container.clientWidth;
       var h = this.state.container.clientHeight;
+      if (w < 2 || h < 2) return;  // DOM not laid out yet; skip cleanly.
       this.state.camera.aspect = w / h;
       this.state.camera.updateProjectionMatrix();
-      this.state.renderer.setSize(w, h);
+      this.state.renderer.setSize(w, h, false);
     },
 
     renderDetails: function(ctx) {

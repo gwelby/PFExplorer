@@ -171,9 +171,20 @@
 
       createBelt3D(this.panelState, ctx);
       this.renderInfo(ctx);
+
+      // Wire the window resize listener to the canonical resize() method
+      // and then snap once so the first frame already matches the laid-out
+      // DOM instead of createBelt3D's initial-size fallback.
+      var self = this;
+      this.panelState._resizeHandler = function () { self.resize(ctx); };
+      window.addEventListener('resize', this.panelState._resizeHandler);
+      self.resize(ctx);
     },
 
     unmount: function () {
+      if (this.panelState && this.panelState._resizeHandler) {
+        window.removeEventListener('resize', this.panelState._resizeHandler);
+      }
       disposeBelt3D(this.panelState);
       this.panelState = null;
     },
@@ -184,9 +195,10 @@
       var r = ps._3d;
       var w = ps.beltContainer.clientWidth;
       var h = ps.beltContainer.clientHeight;
+      if (w < 2 || h < 2) return;  // DOM not laid out yet; skip cleanly.
       r.camera.aspect = w / h;
       r.camera.updateProjectionMatrix();
-      r.renderer.setSize(w, h);
+      r.renderer.setSize(w, h, false);
       if (r.composer) r.composer.setSize(w, h);
     },
 

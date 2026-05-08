@@ -81,12 +81,15 @@
 
     var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    var w = state.canvas.parentElement.clientWidth || 640;
+    var h = state.canvas.parentElement.clientHeight || 400;
+    renderer.setSize(w, h, false);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.3;
     container.appendChild(renderer.domElement);
 
     var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    var camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
     camera.position.set(0, 3, 12);
     camera.lookAt(0, 0, 0);
 
@@ -182,6 +185,7 @@
     // Bloom
     try {
       var composer = new THREE.EffectComposer(renderer);
+      composer.setSize(w, h);
       composer.addPass(new THREE.RenderPass(scene, camera));
       var bloom = new THREE.UnrealBloomPass(
         new THREE.Vector2(state.canvas.clientWidth || 400, state.canvas.clientHeight || 300),
@@ -256,14 +260,19 @@
   function disposeBohr3D(r) {
     if (!r) return;
     window.removeEventListener('resize', r._resizeHandler);
-    r.waveRing.geometry.dispose();
-    r.waveRing.material.dispose();
-    r.orbitRing.geometry.dispose();
-    r.orbitRing.material.dispose();
-    r.nucleus.geometry.dispose();
-    r.nucleus.material.dispose();
-    r.nodeGroup.children.forEach(function (n) { n.geometry.dispose(); n.material.dispose(); });
-    if (r.composer) r.renderer.dispose();
+    // Dispose every geometry/material reachable from the scene graph. This
+    // covers the named meshes (nucleus, orbit ring, wave ring, node group)
+    // AND the reference orbit rings added in the [1,2,3,4].forEach loop,
+    // which a hand-written list previously missed.
+    r.scene.traverse(function (obj) {
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        if (Array.isArray(obj.material)) obj.material.forEach(function (m) { m.dispose(); });
+        else obj.material.dispose();
+      }
+    });
+    if (r.composer && r.composer.dispose) r.composer.dispose();
+    r.renderer.dispose();
     r.container.remove();
   }
 
@@ -627,13 +636,15 @@
 
     resize: function (ctx) {
       var state = this.state;
-      if (state._3d) {
-        var w = state.canvas.clientWidth, h = state.canvas.clientHeight;
-        state._3d.camera.aspect = w / h;
-        state._3d.camera.updateProjectionMatrix();
-        state._3d.renderer.setSize(w, h);
-        if (state._3d.composer) state._3d.composer.setSize(w, h);
-      }
+      if (!state || !state._3d) return;
+      var r = state._3d;
+      var w = state.canvas.parentElement.clientWidth;
+      var h = state.canvas.parentElement.clientHeight;
+      if (w < 2 || h < 2) return;  // DOM not laid out yet; skip cleanly.
+      r.camera.aspect = w / h;
+      r.camera.updateProjectionMatrix();
+      r.renderer.setSize(w, h, false);
+      if (r.composer) r.composer.setSize(w, h);
     },
 
     renderInfo: function (ctx) {
@@ -732,14 +743,12 @@
       if (!state._3d) {
         state._3d = buildBohr3D(state);
         var self = this;
-        state._3d._resizeHandler = function () {
-          var w = state.canvas.clientWidth, h = state.canvas.clientHeight;
-          state._3d.camera.aspect = w / h;
-          state._3d.camera.updateProjectionMatrix();
-          state._3d.renderer.setSize(w, h);
-          if (state._3d.composer) state._3d.composer.setSize(w, h);
-        };
+        state._3d._resizeHandler = function () { self.resize(ctx); };
         window.addEventListener('resize', state._3d._resizeHandler);
+        // Snap the renderer to the current panel size on first mount. The
+        // initial size baked into buildBohr3D is just a safety floor; the
+        // real dimensions only become available after the DOM lays out.
+        self.resize(ctx);
       }
 
       // Create and inject spectral diagram

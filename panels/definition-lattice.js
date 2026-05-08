@@ -325,13 +325,3 @@
   });
 
 }());
-     }
-        });
-      });
-    },
-
-    unmount: function () {},
-    resize: function () {},
-  });
-
-}());
